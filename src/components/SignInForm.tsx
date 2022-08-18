@@ -1,4 +1,4 @@
-import * as React from "react";
+import { FormEvent, useCallback, useState } from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
@@ -8,14 +8,44 @@ import { useAuthContext } from "../contexts/AuthContext";
 
 import ErrorMessage from "./ErrorMessage";
 
-export default function SignInForm() {
+import { validateEmail } from "../utils/emailValidator";
+
+const SignInForm = () => {
+    const [validEmail, setValidEmail] = useState(false);
+    const [emailError, setEmailError] = useState(false);
+
     const { login, error } = useAuthContext();
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const data = new FormData(event.currentTarget);
-        login &&
-            login(data.get("email") as string, data.get("password") as string);
-    };
+
+    const handleSubmit = useCallback(
+        (event: FormEvent<HTMLFormElement>) => {
+            event.preventDefault();
+            const data = new FormData(event.currentTarget);
+            login &&
+                login(
+                    data.get("email") as string,
+                    data.get("password") as string
+                );
+        },
+        [login]
+    );
+
+    const handleEmailChange = useCallback(
+        (event: FormEvent<HTMLFormElement>) => {
+            event.preventDefault();
+            const data = new FormData(event.currentTarget);
+            if (validateEmail(data.get("email") as string)) {
+                setValidEmail(true);
+                setEmailError(false);
+            } else {
+                setValidEmail(false);
+                setEmailError(true);
+                setTimeout(() => {
+                    setEmailError(false);
+                }, 3000);
+            }
+        },
+        []
+    );
 
     return (
         <Box
@@ -31,7 +61,7 @@ export default function SignInForm() {
             <Box
                 component="form"
                 noValidate
-                onSubmit={handleSubmit}
+                onSubmit={validEmail ? handleSubmit : handleEmailChange}
                 sx={{ mt: 1 }}
             >
                 <TextField
@@ -44,23 +74,25 @@ export default function SignInForm() {
                     autoComplete="email"
                     autoFocus
                 />
-                <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    name="password"
-                    label="Password"
-                    type="password"
-                    id="password"
-                    autoComplete="current-password"
-                />
+                {validEmail ? (
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        name="password"
+                        label="Password"
+                        type="password"
+                        id="password"
+                        autoComplete="current-password"
+                    />
+                ) : null}
                 <Button
                     type="submit"
                     fullWidth
                     variant="contained"
                     sx={{ mt: 3, mb: 2 }}
                 >
-                    Sign In
+                    {validEmail ? "Sign In" : "Next"}
                 </Button>
             </Box>
             {error?.state ? (
@@ -68,6 +100,11 @@ export default function SignInForm() {
                     message={error?.message || "An error has ocurred."}
                 />
             ) : null}
+            {emailError ? (
+                <ErrorMessage message={"The email is incorrect."} />
+            ) : null}
         </Box>
     );
-}
+};
+
+export default SignInForm;

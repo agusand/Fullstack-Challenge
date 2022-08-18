@@ -8,14 +8,8 @@ import UserInfo from "./views/user-info";
 
 import { AuthContextProvider, useAuthContext } from "./contexts/AuthContext";
 
-function App() {
-    const { isAuthenticated, isLoading, getUserInfo } = useAuthContext();
-
-    useEffect(() => {
-        if (isAuthenticated && getUserInfo) {
-            getUserInfo();
-        }
-    }, [getUserInfo, isAuthenticated]);
+const App = () => {
+    const { isAuthenticated, isLoading } = useAuthContext();
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -61,20 +55,30 @@ function App() {
                                     )
                                 }
                             />
+                            <Route
+                                path="/"
+                                element={
+                                    !isAuthenticated ? (
+                                        <Navigate replace to="/login" />
+                                    ) : (
+                                        <Navigate replace to="/user-info" />
+                                    )
+                                }
+                            />
                         </Routes>
                     </Grid>
                 </Grid>
             </div>
         </BrowserRouter>
     );
-}
+};
 
-function AppWrapper() {
+const AppWrapper = () => {
     return (
         <AuthContextProvider>
             <App />
         </AuthContextProvider>
     );
-}
+};
 
 export default AppWrapper;
