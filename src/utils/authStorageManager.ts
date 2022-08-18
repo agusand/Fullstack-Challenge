@@ -10,7 +10,3 @@ export function saveJWT(jwt: string) {
 export function getJWT(): string {
     return localStorage.getItem("jwt") || "";
 }
-
-export function removeJWT() {
-    localStorage.removeItem("jwt");
-}

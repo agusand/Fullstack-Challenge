@@ -1,9 +1,9 @@
-import React, { useState, useContext, createContext, FC } from "react";
+import { useState, useContext, createContext } from "react";
 
 import { AuthContextInterface } from "../types/AuthContextInterface";
-import { ServerUser } from "../types/UserInterface";
+import { ClientUser } from "../types/UserInterface";
 
-import { saveJWT, removeJWT } from "../utils/authStorageManager";
+import { saveJWT, getJWT } from "../utils/authStorageManager";
 
 const AuthContext = createContext<Partial<AuthContextInterface>>({});
 
@@ -17,72 +17,94 @@ export const AuthContextProvider = ({
     children: JSX.Element;
 }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [user, setUser] = useState({} as ServerUser);
+    const [user, setUser] = useState({} as ClientUser);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState({ state: false, message: "" });
 
-    const login = async (email: string, password: string) => {
+    function setErrorTrue(message: string) {
+        setError({ state: true, message });
+        setTimeout(() => {
+            setError({ state: false, message: "" });
+        }, 3000);
+    }
+
+    async function getUserInfo(jwt: string = "") {
         setIsLoading(true);
         setError({ state: false, message: "" });
         try {
-            const response = await fetch(
-                "http://localhost:5000/api/auth/login",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        email,
-                        password,
-                    }),
-                }
-            );
-            const data = await response.json();
-            if (data.success) {
-                saveJWT(data.token);
+            const userResponse = await fetch("/api/v0/users/me", {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${jwt || getJWT()}`,
+                },
+            });
+
+            const data = await userResponse.json();
+            if (userResponse.status === 200) {
+                setUser(data as ClientUser);
                 setIsAuthenticated(true);
-                setUser(data.user as ServerUser);
             } else {
-                setError({ state: true, message: data.message });
+                setErrorTrue(
+                    data === "Invalid token" ? data : "Authentication error"
+                );
+                setIsAuthenticated(false);
+                setUser({} as ClientUser);
             }
         } catch (error: any) {
-            setError({ state: true, message: error.message });
+            setErrorTrue(error.message);
+            setIsAuthenticated(false);
+            setUser({} as ClientUser);
         } finally {
             setIsLoading(false);
         }
-    };
-    const logout = async () => {
+    }
+
+    async function login(email: string, password: string) {
         setIsLoading(true);
         setError({ state: false, message: "" });
         try {
-            const response = await fetch(
-                "http://localhost:5000/api/auth/logout",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-            const data = await response.json();
-            if (data.success) {
-                removeJWT();
-                setIsAuthenticated(false);
-                setUser({} as ServerUser);
+            const authResponse = await fetch("/api/v0/authenticate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                }),
+            });
+            const data = await authResponse.json();
+            if (authResponse.status === 200) {
+                saveJWT(data.jwt);
+                getUserInfo(data.jwt);
             } else {
-                setError({ state: true, message: data.message });
+                setErrorTrue(
+                    data === "Invalid email or password"
+                        ? data
+                        : "Authentication error"
+                );
+                setIsAuthenticated(false);
+                setUser({} as ClientUser);
             }
         } catch (error: any) {
-            setError({ state: true, message: error.message });
+            setErrorTrue(error.message);
+            setIsAuthenticated(false);
+            setUser({} as ClientUser);
         } finally {
             setIsLoading(false);
         }
-    };
+    }
 
     return (
         <AuthContext.Provider
-            value={{ login, logout, isAuthenticated, user, isLoading, error }}
+            value={{
+                login,
+                getUserInfo,
+                isAuthenticated,
+                user,
+                isLoading,
+                error,
+            }}
         >
             {children}
         </AuthContext.Provider>
