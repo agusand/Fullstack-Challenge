@@ -2,6 +2,8 @@ import { useEffect } from "react";
 
 import { useAuthContext } from "../contexts/AuthContext";
 
+import UserCard from "../components/UserCard";
+
 const UserInfo = () => {
     const { user, getUserInfo } = useAuthContext();
 
@@ -11,7 +13,6 @@ const UserInfo = () => {
         }
     }, [getUserInfo]);
 
-    console.log(user);
-    return <div>UserInfo</div>;
+    return <div>{user?.id ? <UserCard /> : null}</div>;
 };
 export default UserInfo;

@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import CssBaseline from "@mui/material/CssBaseline";
 import Grid from "@mui/material/Grid";
@@ -11,14 +10,6 @@ import { AuthContextProvider, useAuthContext } from "./contexts/AuthContext";
 const App = () => {
     const { isAuthenticated, isLoading } = useAuthContext();
 
-    useEffect(() => {
-        if (isAuthenticated) {
-            console.log("User is authenticated");
-        } else {
-            console.log("User is not authenticated");
-        }
-    }, [isAuthenticated]);
-
     if (isLoading) {
         return <div>Loading...</div>;
     }
@@ -30,10 +21,14 @@ const App = () => {
                 <Grid
                     container
                     component="main"
-                    sx={{ height: "100vh" }}
-                    alignItems={"center"}
+                    sx={{
+                        height: "100vh",
+                        width: "100vw",
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
                 >
-                    <Grid item xs={12}>
+                    <Grid item>
                         <Routes>
                             <Route
                                 path="/login"
