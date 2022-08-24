@@ -10,9 +10,9 @@ describe("storageManager", () => {
 
     test("saveJWT", () => {
         saveJWT("test");
-        expect(JSON.parse(localStorage.getItem("jwt") as string)).toEqual(
-            "test"
-        );
+        expect(
+            JSON.parse(localStorage.getItem("jwt") as string)?.token
+        ).toEqual("test");
         localStorage.removeItem("jwt");
     });
 
