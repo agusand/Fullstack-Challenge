@@ -6,6 +6,8 @@ import Grid from "@mui/material/Grid";
 import Login from "./views/login";
 import UserInfo from "./views/user-info";
 
+import Loading from "./components/Loading";
+
 import { AuthContextProvider, useAuthContext } from "./contexts/AuthContext";
 
 const App = () => {
@@ -16,10 +18,6 @@ const App = () => {
             getUserInfo();
         }
     }, [getUserInfo]);
-
-    if (isLoading) {
-        return <div>Loading...</div>;
-    }
 
     return (
         <BrowserRouter>
@@ -36,38 +34,42 @@ const App = () => {
                     }}
                 >
                     <Grid item>
-                        <Routes>
-                            <Route
-                                path="/login"
-                                element={
-                                    isAuthenticated ? (
-                                        <Navigate replace to="/user-info" />
-                                    ) : (
-                                        <Login />
-                                    )
-                                }
-                            />
-                            <Route
-                                path="/user-info"
-                                element={
-                                    !isAuthenticated ? (
-                                        <Navigate replace to="/login" />
-                                    ) : (
-                                        <UserInfo />
-                                    )
-                                }
-                            />
-                            <Route
-                                path="/"
-                                element={
-                                    !isAuthenticated ? (
-                                        <Navigate replace to="/login" />
-                                    ) : (
-                                        <Navigate replace to="/user-info" />
-                                    )
-                                }
-                            />
-                        </Routes>
+                        {isLoading ? (
+                            <Loading />
+                        ) : (
+                            <Routes>
+                                <Route
+                                    path="/login"
+                                    element={
+                                        isAuthenticated ? (
+                                            <Navigate replace to="/user-info" />
+                                        ) : (
+                                            <Login />
+                                        )
+                                    }
+                                />
+                                <Route
+                                    path="/user-info"
+                                    element={
+                                        !isAuthenticated ? (
+                                            <Navigate replace to="/login" />
+                                        ) : (
+                                            <UserInfo />
+                                        )
+                                    }
+                                />
+                                <Route
+                                    path="/"
+                                    element={
+                                        !isAuthenticated ? (
+                                            <Navigate replace to="/login" />
+                                        ) : (
+                                            <Navigate replace to="/user-info" />
+                                        )
+                                    }
+                                />
+                            </Routes>
+                        )}
                     </Grid>
                 </Grid>
             </div>
