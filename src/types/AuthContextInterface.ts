@@ -1,11 +1,12 @@
-import { ServerUser } from "./UserInterface";
+import { ClientUser } from "./UserInterface";
 import { Error } from "./ErrorInterface";
 
 export interface AuthContextInterface {
     isAuthenticated: boolean;
     isLoading: boolean;
-    user: ServerUser;
+    user: ClientUser;
     error: Error;
     login: (email: string, password: string) => void;
     logout: () => void;
+    getUserInfo: (jwt?: string) => void;
 }

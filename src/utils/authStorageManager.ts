@@ -1,16 +1,18 @@
-export function saveJWT(jwt: string) {
+export const saveJWT = (jwt: string) => {
     if (jwt) {
-        localStorage.setItem("jwt", jwt);
+        const stringJwt = JSON.stringify(jwt);
+        localStorage.setItem("jwt", stringJwt);
         return true;
     } else {
         return false;
     }
-}
+};
 
-export function getJWT(): string {
-    return localStorage.getItem("jwt") || "";
-}
+export const getJWT = (): string => {
+    const unparsedJwt = localStorage.getItem("jwt") || "";
+    return JSON.parse(unparsedJwt)?.token || "";
+};
 
-export function removeJWT() {
+export const clearJWT = (): void => {
     localStorage.removeItem("jwt");
-}
+};

@@ -1,9 +1,9 @@
-import React, { useState, useContext, createContext, FC } from "react";
+import { useState, useContext, createContext, useCallback } from "react";
 
 import { AuthContextInterface } from "../types/AuthContextInterface";
-import { ServerUser } from "../types/UserInterface";
+import { ClientUser } from "../types/UserInterface";
 
-import { saveJWT, removeJWT } from "../utils/authStorageManager";
+import { saveJWT, getJWT, clearJWT } from "../utils/authStorageManager";
 
 const AuthContext = createContext<Partial<AuthContextInterface>>({});
 
@@ -17,72 +17,118 @@ export const AuthContextProvider = ({
     children: JSX.Element;
 }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [user, setUser] = useState({} as ServerUser);
+    const [user, setUser] = useState({} as ClientUser);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState({ state: false, message: "" });
 
-    const login = async (email: string, password: string) => {
-        setIsLoading(true);
-        setError({ state: false, message: "" });
-        try {
-            const response = await fetch(
-                "http://localhost:5000/api/auth/login",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        email,
-                        password,
-                    }),
-                }
-            );
-            const data = await response.json();
-            if (data.success) {
-                saveJWT(data.token);
-                setIsAuthenticated(true);
-                setUser(data.user as ServerUser);
-            } else {
-                setError({ state: true, message: data.message });
-            }
-        } catch (error: any) {
-            setError({ state: true, message: error.message });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    const logout = async () => {
-        setIsLoading(true);
-        setError({ state: false, message: "" });
-        try {
-            const response = await fetch(
-                "http://localhost:5000/api/auth/logout",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-            const data = await response.json();
-            if (data.success) {
-                removeJWT();
-                setIsAuthenticated(false);
-                setUser({} as ServerUser);
-            } else {
-                setError({ state: true, message: data.message });
-            }
-        } catch (error: any) {
-            setError({ state: true, message: error.message });
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const setErrorTrue = useCallback((message: string) => {
+        setError({ state: true, message });
+        setTimeout(() => {
+            setError({ state: false, message: "" });
+        }, 3000);
+    }, []);
 
+    const getUserInfo = useCallback(
+        async (jwt: string = "") => {
+            setIsLoading(true);
+            setError({ state: false, message: "" });
+            try {
+                const userResponse = await fetch(
+                    "https://drixit-backend.herokuapp.com/api/v0/users/me",
+                    {
+                        method: "GET",
+                        headers: {
+                            Authorization: `Bearer ${jwt || getJWT()}`,
+                        },
+                    }
+                );
+
+                const data = await userResponse.json();
+
+                const userData = { ...data, id: data._id };
+
+                if (userResponse.status === 200 && data) {
+                    setUser(userData as ClientUser);
+                    setIsAuthenticated(true);
+                } else {
+                    setErrorTrue(
+                        data === "Invalid token."
+                            ? data
+                            : "Authentication error."
+                    );
+                    setIsAuthenticated(false);
+                    setUser({} as ClientUser);
+                }
+            } catch (error: any) {
+                setErrorTrue(error.message);
+                setIsAuthenticated(false);
+                setUser({} as ClientUser);
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        [setErrorTrue]
+    );
+
+    const login = useCallback(
+        async (email: string, password: string) => {
+            setIsLoading(true);
+            setError({ state: false, message: "" });
+            try {
+                const authResponse = await fetch(
+                    "https://drixit-backend.herokuapp.com/api/v0/authenticate",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            email,
+                            password,
+                        }),
+                    }
+                );
+                const data = await authResponse.json();
+
+                console.log(authResponse.status === 200 && data?.token);
+                if (authResponse.status === 200 && data?.token) {
+                    saveJWT(data.token);
+                    getUserInfo(data.token);
+                } else {
+                    setErrorTrue(
+                        data === "The email or password are incorrect."
+                            ? data
+                            : "Authentication error."
+                    );
+                    setIsAuthenticated(false);
+                    setUser({} as ClientUser);
+                }
+            } catch (error: any) {
+                setErrorTrue(error.message);
+                setIsAuthenticated(false);
+                setUser({} as ClientUser);
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        [getUserInfo, setErrorTrue]
+    );
+
+    const logout = useCallback(() => {
+        clearJWT();
+        setIsAuthenticated(false);
+    }, []);
     return (
         <AuthContext.Provider
-            value={{ login, logout, isAuthenticated, user, isLoading, error }}
+            value={{
+                login,
+                logout,
+                getUserInfo,
+                isAuthenticated,
+                user,
+                isLoading,
+                error,
+            }}
         >
             {children}
         </AuthContext.Provider>
