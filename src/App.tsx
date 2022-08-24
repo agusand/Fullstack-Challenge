@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import CssBaseline from "@mui/material/CssBaseline";
 import Grid from "@mui/material/Grid";
@@ -8,7 +9,13 @@ import UserInfo from "./views/user-info";
 import { AuthContextProvider, useAuthContext } from "./contexts/AuthContext";
 
 const App = () => {
-    const { isAuthenticated, isLoading } = useAuthContext();
+    const { isAuthenticated, isLoading, getUserInfo } = useAuthContext();
+
+    useEffect(() => {
+        if (getUserInfo) {
+            getUserInfo();
+        }
+    }, [getUserInfo]);
 
     if (isLoading) {
         return <div>Loading...</div>;

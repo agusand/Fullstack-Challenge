@@ -1,17 +1,9 @@
-import { useEffect } from "react";
-
 import { useAuthContext } from "../contexts/AuthContext";
 
 import UserCard from "../components/UserCard";
 
 const UserInfo = () => {
-    const { user, getUserInfo } = useAuthContext();
-
-    useEffect(() => {
-        if (getUserInfo) {
-            getUserInfo();
-        }
-    }, [getUserInfo]);
+    const { user } = useAuthContext();
 
     return <div>{user?.id ? <UserCard /> : null}</div>;
 };

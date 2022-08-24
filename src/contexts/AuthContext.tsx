@@ -3,7 +3,7 @@ import { useState, useContext, createContext, useCallback } from "react";
 import { AuthContextInterface } from "../types/AuthContextInterface";
 import { ClientUser } from "../types/UserInterface";
 
-import { saveJWT, getJWT } from "../utils/authStorageManager";
+import { saveJWT, getJWT, clearJWT } from "../utils/authStorageManager";
 
 const AuthContext = createContext<Partial<AuthContextInterface>>({});
 
@@ -34,7 +34,7 @@ export const AuthContextProvider = ({
             setError({ state: false, message: "" });
             try {
                 const userResponse = await fetch(
-                    "http://localhost:5000/api/v0/users/me",
+                    "https://drixit-backend.herokuapp.com/api/v0/users/me",
                     {
                         method: "GET",
                         headers: {
@@ -45,12 +45,16 @@ export const AuthContextProvider = ({
 
                 const data = await userResponse.json();
 
-                if (userResponse.status === 200 && data?.user) {
-                    setUser(data.user as ClientUser);
+                const userData = { ...data, id: data._id };
+
+                if (userResponse.status === 200 && data) {
+                    setUser(userData as ClientUser);
                     setIsAuthenticated(true);
                 } else {
                     setErrorTrue(
-                        /* data === "Invalid token" ? data :  */ "Authentication error"
+                        data === "Invalid token."
+                            ? data
+                            : "Authentication error."
                     );
                     setIsAuthenticated(false);
                     setUser({} as ClientUser);
@@ -72,7 +76,7 @@ export const AuthContextProvider = ({
             setError({ state: false, message: "" });
             try {
                 const authResponse = await fetch(
-                    "http://localhost:5000/api/v0/authenticate",
+                    "https://drixit-backend.herokuapp.com/api/v0/authenticate",
                     {
                         method: "POST",
                         headers: {
@@ -86,15 +90,15 @@ export const AuthContextProvider = ({
                 );
                 const data = await authResponse.json();
 
-                const dataObject = { jwt: data as string };
-                if (authResponse.status === 200 && dataObject?.jwt) {
-                    saveJWT(dataObject.jwt);
-                    getUserInfo(dataObject.jwt);
+                console.log(authResponse.status === 200 && data?.token);
+                if (authResponse.status === 200 && data?.token) {
+                    saveJWT(data.token);
+                    getUserInfo(data.token);
                 } else {
                     setErrorTrue(
-                        /* data === "Invalid email or password"
-                        ? data
-                        :  */ "Authentication error"
+                        data === "The email or password are incorrect."
+                            ? data
+                            : "Authentication error."
                     );
                     setIsAuthenticated(false);
                     setUser({} as ClientUser);
@@ -110,10 +114,15 @@ export const AuthContextProvider = ({
         [getUserInfo, setErrorTrue]
     );
 
+    const logout = useCallback(() => {
+        clearJWT();
+        setIsAuthenticated(false);
+    }, []);
     return (
         <AuthContext.Provider
             value={{
                 login,
+                logout,
                 getUserInfo,
                 isAuthenticated,
                 user,

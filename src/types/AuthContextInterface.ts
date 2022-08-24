@@ -7,5 +7,6 @@ export interface AuthContextInterface {
     user: ClientUser;
     error: Error;
     login: (email: string, password: string) => void;
+    logout: () => void;
     getUserInfo: (jwt?: string) => void;
 }

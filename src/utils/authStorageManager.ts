@@ -12,3 +12,7 @@ export const getJWT = (): string => {
     const unparsedJwt = localStorage.getItem("jwt") || "";
     return JSON.parse(unparsedJwt)?.token || "";
 };
+
+export const clearJWT = (): void => {
+    localStorage.removeItem("jwt");
+};

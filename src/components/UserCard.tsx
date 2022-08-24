@@ -4,11 +4,12 @@ import Avatar from "@mui/material/Avatar";
 import ListItemText from "@mui/material/ListItemText";
 import List from "@mui/material/List";
 import Card from "@mui/material/Card";
+import Button from "@mui/material/Button";
 
 import { useAuthContext } from "../contexts/AuthContext";
 
 const UserCard = () => {
-    const { user } = useAuthContext();
+    const { user, logout } = useAuthContext();
 
     return (
         <Card
@@ -59,6 +60,11 @@ const UserCard = () => {
                     </ListItemText>
                     <ListItemText sx={{ color: "white" }}>
                         Role: {user?.role}
+                    </ListItemText>
+                    <ListItemText>
+                        <Button sx={{ color: "white" }} onClick={logout}>
+                            Logout
+                        </Button>
                     </ListItemText>
                 </List>
             </Box>
