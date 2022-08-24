@@ -1,6 +1,7 @@
 export const saveJWT = (jwt: string) => {
     if (jwt) {
-        localStorage.setItem("jwt", jwt);
+        const stringJwt = JSON.stringify(jwt);
+        localStorage.setItem("jwt", stringJwt);
         return true;
     } else {
         return false;
@@ -8,5 +9,6 @@ export const saveJWT = (jwt: string) => {
 };
 
 export const getJWT = (): string => {
-    return localStorage.getItem("jwt") || "";
+    const unparsedJwt = localStorage.getItem("jwt") || "";
+    return JSON.parse(unparsedJwt)?.token || "";
 };

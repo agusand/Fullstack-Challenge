@@ -5,8 +5,6 @@ import { ClientUser } from "../types/UserInterface";
 
 import { saveJWT, getJWT } from "../utils/authStorageManager";
 
-import users from "../utils/users";
-
 const AuthContext = createContext<Partial<AuthContextInterface>>({});
 
 export const useAuthContext = () => {
@@ -35,25 +33,19 @@ export const AuthContextProvider = ({
             setIsLoading(true);
             setError({ state: false, message: "" });
             try {
-                /* const userResponse = await fetch("/api/v0/users/me", {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${jwt || getJWT()}`,
-                },
-            });
+                const userResponse = await fetch(
+                    "http://localhost:5000/api/v0/users/me",
+                    {
+                        method: "GET",
+                        headers: {
+                            Authorization: `Bearer ${jwt || getJWT()}`,
+                        },
+                    }
+                );
 
-            const data = await userResponse.json(); */
+                const data = await userResponse.json();
 
-                const data =
-                    jwt || getJWT()
-                        ? {
-                              user: users.find(
-                                  (user) => user.id === jwt || getJWT()
-                              ),
-                          }
-                        : {};
-
-                if (/* userResponse.status === 200 */ data?.user) {
+                if (userResponse.status === 200 && data?.user) {
                     setUser(data.user as ClientUser);
                     setIsAuthenticated(true);
                 } else {
@@ -79,24 +71,25 @@ export const AuthContextProvider = ({
             setIsLoading(true);
             setError({ state: false, message: "" });
             try {
-                /* const authResponse = await fetch("/api/v0/authenticate", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email,
-                    password,
-                }),
-            }); */
-                /* const data = await authResponse.json(); */
-                const userId = users.find((user) => {
-                    return user.email === email && user.password === password;
-                })?.id;
-                const data = { jwt: userId as string };
-                if (/* authResponse.status === 200 */ userId) {
-                    saveJWT(data.jwt);
-                    getUserInfo(data.jwt);
+                const authResponse = await fetch(
+                    "http://localhost:5000/api/v0/authenticate",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            email,
+                            password,
+                        }),
+                    }
+                );
+                const data = await authResponse.json();
+
+                const dataObject = { jwt: data as string };
+                if (authResponse.status === 200 && dataObject?.jwt) {
+                    saveJWT(dataObject.jwt);
+                    getUserInfo(dataObject.jwt);
                 } else {
                     setErrorTrue(
                         /* data === "Invalid email or password"
