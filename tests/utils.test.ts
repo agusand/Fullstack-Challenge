@@ -1,15 +1,25 @@
 import { validateEmail } from "../src/utils/emailValidator";
-import { getJWT, saveJWT } from "../src/utils/authStorageManager";
+import { getJWT, saveJWT, clearJWT } from "../src/utils/authStorageManager";
 
 describe("storageManager", () => {
     test("getJWT", () => {
-        localStorage.setItem("jwt", "test");
+        localStorage.setItem("jwt", JSON.stringify({ token: "test" }));
         expect(getJWT()).toEqual("test");
+        localStorage.removeItem("jwt");
     });
 
     test("saveJWT", () => {
         saveJWT("test");
-        expect(localStorage.getItem("jwt")).toEqual("test");
+        expect(JSON.parse(localStorage.getItem("jwt") as string)).toEqual(
+            "test"
+        );
+        localStorage.removeItem("jwt");
+    });
+
+    test("clearJWT", () => {
+        localStorage.setItem("jwt", "test");
+        clearJWT();
+        expect(localStorage.getItem("jwt")).toEqual(null);
     });
 });
 
