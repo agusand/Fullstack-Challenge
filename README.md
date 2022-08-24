@@ -5,3 +5,15 @@
 -   I have written some tests for my utils tools. I created a workflow on GitHub actions to run them in every pull request.
 -   I chose Vercel as hosting because of its good service and speed for Create React App applications, even being free.
 -   I have developed the app and its backend with Typescript because it helps to make a more robust codebase, and avoid errors.
+
+## Deployments
+
+Frontend: Vercel - https://fullstack-challenge-agusand.vercel.app/
+
+Backend: Heroku - https://drixit-backend.herokuapp.com/
+
+## Repositories
+
+Frontend: https://github.com/agusand/Fullstack-Challenge
+
+Backend: https://github.com/agusand/server
