@@ -92,7 +92,7 @@ export const AuthContextProvider = ({
 
                 console.log(authResponse.status === 200 && data?.token);
                 if (authResponse.status === 200 && data?.token) {
-                    saveJWT(data.token);
+                    saveJWT({ token: data.token });
                     getUserInfo(data.token);
                 } else {
                     setErrorTrue(
