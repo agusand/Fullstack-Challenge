@@ -5,7 +5,6 @@ import Grid from "@mui/material/Grid";
 
 import Login from "./views/login";
 import UserInfo from "./views/user-info";
-
 import Loading from "./components/Loading";
 
 import { AuthContextProvider, useAuthContext } from "./contexts/AuthContext";
